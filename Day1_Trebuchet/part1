@@ -1,0 +1,13 @@
+sed s/'[^0-9]'//g input | awk -F '' '{s+=$1$NF} END {print s}'
+
+# sed just finds every non-digit and replaces it with nothing
+
+# awk breakdown:
+#
+# -F '' says that the delimeter is an empty string:
+# every character is a column.
+#
+# '{print $1$NF}' prints each first column ($1) and last column ($NF),
+# which I used for debugging.
+#
+# '{s+=$1$NF} END {print s}' sums each of those lines and prints the result.

@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Get the list of games that are IMPOSSIBLE because of reds
+grep -P "[0-9]*(?= red)" input -no \
+| awk -F: '($2 > 12) {print $1}' \
+> bad
+
+# Same for greens
+grep -P "[0-9]*(?= green)" input -no \
+| awk -F: '($2 > 13) {print $1}' \
+>> bad
+
+# Same for blues
+grep -P "[0-9]*(?= blue)" input -no \
+| awk -F: '($2 > 14) {print $1}' \
+>> bad
+
+diff --suppress-common-lines \
+     <(sort --numeric-sort --unique bad) \
+     <(awk -F: '{print $1}' input \
+     | sed 's/Game //g') \
+| awk -F' ' '{s+=$2} END {print s}'
+
+rm bad

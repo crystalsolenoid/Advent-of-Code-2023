@@ -1,0 +1,3 @@
+#!/bin/bash
+
+cat input | python3 part2.py | awk '{p+=$1} END {print p}'
