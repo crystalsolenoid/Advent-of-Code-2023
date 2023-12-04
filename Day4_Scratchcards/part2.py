@@ -6,9 +6,7 @@ def play(lines, i):
     global ans
     ans += 1
     card = lines[i]
-    sWin, sHave = [x.split() for x in card.split(':')[1].split('|')]
-    win = set([int(x) for x in sWin])
-    have = set([int(x) for x in sHave])
+    win, have = [set(x.split()) for x in card.split(':')[1].split('|')]
     matches = len(win & have)
     end = min(i + matches + 1, len(lines))
     for j in range(i + 1, end):
