@@ -2,38 +2,54 @@ import sys
 import string
 import re
 import math
+import itertools
 
 number = re.compile('[0-9]+')
 
 gears = {}
 
-def check(match, lines, line, column):
-    minCol = max(column - 1, 0)
-    maxCol = min(column + 2, len(lines[0]))
-    minLine = max(line - 1, 0)
-    maxLine = min(line + 2, len(lines))
-    for l, line in enumerate(lines[minLine:maxLine]):
-        for c, col in enumerate(line[minCol:maxCol]):
-            if col == '*':
-                key = f'({l + minLine}, {c + minCol})'
-                if key in gears:
-                    gears[key] = set([match]) | gears[key]
-                else:
-                    gears[key] = set([match])
+def get_neighbors(raw, idx):
+    r, c = coord_from_pos(raw, idx)
+    r_range = range(r-1, r+2)
+    c_range = range(c-1, c+2)
+    neighbors = []
+    for r, c in itertools.product(r_range, c_range):
+        pos = pos_from_coord(raw, r, c)
+        if pos in range(0, len(raw)):
+            neighbors.append(pos)
+    return [(i, raw[i]) for i in neighbors]
+
+def coord_from_pos(raw, idx):
+    rows = len(raw) // raw.count('\n')
+    return (idx // rows, idx % rows)
+
+def pos_from_coord(raw, r, c):
+    rows = len(raw) // raw.count('\n')
+    return r * rows + c
+
+def find_gears(raw):
+    for n in number.finditer(raw):
+        find_neighbor_gears(raw, n)
+
+def find_neighbor_gears(raw, n):
+    for digit in range(*n.span()):
+        for g in filter(lambda x: x[1] == '*', get_neighbors(raw, digit)):
+            if g[0] in gears:
+                gears[g[0]] = set([int(n.group())]) | gears[g[0]]
+            else:
+                gears[g[0]] = set([int(n.group())])
+
+def count_gears():
+    acc = 0
+    for k, v in gears.items():
+        if len(v) == 2:
+            acc += math.prod(v)
+    return acc
 
 if __name__ == "__main__":
     f = sys.argv[1]
     with open(sys.argv[1]) as f:
         raw = f.read()
-        lines = raw.splitlines()
-        for i, line in enumerate(lines):
-            for n in number.finditer(line):
-                span = n.span()
-                if any([check(int(n.group()), lines, i, j) for j in range(*span)]):
-                    acc += int(n.group())
-        print(gears)
-        acc = 0
-        for k, v in gears.items():
-            if len(v) == 2:
-                acc += math.prod(v)
-        sys.stdout.write(str(acc) + '\n')
+        find_gears(raw)
+        ans = str(count_gears())
+        sys.stdout.write(ans + '\n')
